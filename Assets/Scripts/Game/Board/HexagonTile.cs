@@ -25,12 +25,9 @@ public class HexagonTile : MonoBehaviour
     {
     }
 
-    private void OnCollisionStay(Collision collision)
+    public void SetOnTile(GameObject _gameObject)
     {
-        if (collision.gameObject.CompareTag("Player"))
-        {
-            onThisTile = collision.gameObject;
-        }
+        onThisTile = _gameObject;
     }
 
     public bool IsNeighbour(HexagonTile other)

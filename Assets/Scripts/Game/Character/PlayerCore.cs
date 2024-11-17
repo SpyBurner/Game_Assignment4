@@ -35,6 +35,7 @@ public class PlayerCore : MonoBehaviour
         newUI.GetComponent<UIUpdater>().player = gameObject;
 
         currentTile = board.GetSpawnPoint();
+        currentTile.SetOnTile(gameObject);
 
         turnID = turnManager.AddPlayer(gameObject);
     }
@@ -77,7 +78,11 @@ public class PlayerCore : MonoBehaviour
             if (currentTile.IsNeighbour(otherTile))
             {
                 if (playerStat.UseMana(1))
+                {
+                    currentTile.SetOnTile(null);
                     currentTile = otherTile;
+                    currentTile.SetOnTile(gameObject);
+                }
             }
         }
         else
