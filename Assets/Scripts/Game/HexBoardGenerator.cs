@@ -1,3 +1,5 @@
+#define DEBUG
+
 using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
@@ -8,88 +10,62 @@ using Photon.Pun;
 // Generate a hexagonal grid in i j k coordinates
 public class HexBoardGenerator : MonoBehaviourPun
 {
-    public int sides = 4;
-
-    public int radius = 4;
-    public float gap = 0.1f;
-    [Space]
+    public int gridRadius = 3;
+    public float hexRadius = 1f;
     public GameObject hexPrefab;
-    public bool flatTopped = false;
-
-    private List<GameObject> hexes;
 
     private float hexWidth;
     private float hexHeight;
 
-    private Vector2 unitVectorI;
-    private Vector2 unitVectorJ;
-    private Vector2 unitVectorK;
+    private Hashtable hexagons = new Hashtable();
     // Start is called before the first frame update
     void Start()
     {
-        if (sides < 3)
-        {
-            sides = 3;
-        }
+#if DEBUG
+        PhotonNetwork.OfflineMode = true;
+        PhotonNetwork.CreateRoom(null);
+#endif
 
-        if (sides == 3)
-        {
-            // triangle
-            // Calculate the amount of hexes in the grid
-            Debug.LogError("Triangle hexagons not implemented yet");
-        }
 
-        if (flatTopped)
-        {
-            Debug.LogError("Flat topped hexagons not implemented yet");
-        }
 
         SpriteRenderer sr = hexPrefab.GetComponent<SpriteRenderer>();
-        if (sr == null)
-        {
-            Debug.LogError("No SpriteRenderer found on hexPrefab");
-            return;
-        }
-
         hexWidth = sr.bounds.size.x;
         hexHeight = sr.bounds.size.y;
 
-        unitVectorI = new Vector2(1.5f * hexWidth + gap, 0);
-        unitVectorJ = new Vector2(0.75f * hexWidth + gap, 1.5f * hexHeight + gap);
-        unitVectorK = new Vector2(-0.75f * hexWidth - gap, 1.5f * hexHeight + gap);
+        GenerateHexGrid();
+    }
 
-        if (sides == 4)
+    private void GenerateHexGrid()
+    {
+        int extraTiles = 2; // Number of extra tiles on each side for each row
+
+        for (int r = -gridRadius; r <= gridRadius; r++)
         {
-            // square
-            for (int i = -radius; i < radius; ++i)
+            for (int q = -gridRadius - extraTiles; q <= gridRadius + extraTiles; q++)
             {
-                for (int j = -radius; j < radius; ++j)
+                int s = -q - r;
+                if (Mathf.Abs(s) <= gridRadius + extraTiles)
                 {
-                    for (int k = -radius; k < radius; ++j)
-                    {
-                        GameObject hex = PhotonNetwork.Instantiate(hexPrefab.name, transform.position, transform.rotation);
+                    Vector3 hexPosition = HexToPixel(q, r, s);
+                    GameObject hex = PhotonNetwork.Instantiate(hexPrefab.name, hexPosition, Quaternion.identity);
+                    hex.name = $"Hex_{q}_{r}_{s}";
+                    hex.transform.SetParent(this.transform);
 
-                        //Positioning the 2D hexagon tile
-
-                        Vector2 newPos = unitVectorI * i + unitVectorJ * j + unitVectorK * k;
-
-                        hex = PhotonNetwork.Instantiate(hexPrefab.name, newPos, Quaternion.identity);
-
-                        //hex.transform.position = new Vector3(newPos.x, newPos.y, 0);
-
-                        hex.GetComponent<HexagonTile>().i = i;
-                        hex.GetComponent<HexagonTile>().j = j;
-                        hex.GetComponent<HexagonTile>().k = k;
-                        hex.GetComponent<HexagonTile>().hexBoard = this;
-                    }
+                    hexagons.Add((q, r, s), hex);
                 }
             }
         }
     }
 
-    // Update is called once per frame
-    void Update()
+    private Vector3 HexToPixel(int q, int r, int s)
     {
-        
+        float x = hexRadius * (Mathf.Sqrt(3) * q + Mathf.Sqrt(3) / 2 * r);
+        float y = hexRadius * (3f / 2 * r);
+        return new Vector3(x, y, 0);
+    }
+
+    GameObject GetTileAt(int q, int r, int s)
+    {
+        return hexagons[(q, r, s)] as GameObject;
     }
 }

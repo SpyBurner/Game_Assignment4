@@ -12,7 +12,8 @@ public class RoomManager : PhotonSingleton<RoomManager>
     {
         if (roomNameText == null)
         {
-            throw new System.Exception("Room name text is not set");
+            if (!PhotonNetwork.OfflineMode)
+                throw new System.Exception("Room name text is not set");
         }
     }
 
@@ -24,6 +25,12 @@ public class RoomManager : PhotonSingleton<RoomManager>
 
     public void CreateRoom()
     {
+        if (PhotonNetwork.OfflineMode)
+        {
+            Debug.Log("Creating offline room");
+            PhotonNetwork.CreateRoom(null);
+            return;
+        }
         string roomName = roomNameText.text;
 
         if (string.IsNullOrEmpty(roomName))
@@ -39,10 +46,6 @@ public class RoomManager : PhotonSingleton<RoomManager>
     {
         string roomName = roomNameText.text;
 
-        if (PhotonNetwork.OfflineMode)
-        {
-            roomName = "Offline";
-        }
 
         if (string.IsNullOrEmpty(roomName))
         {
