@@ -6,18 +6,25 @@ using System.Security.Cryptography;
 using UnityEngine;
 using UnityEngine.UI;
 using Photon.Pun;
+using System.Linq;
+using Unity.VisualScripting;
 
 // Generate a hexagonal grid in i j k coordinates
-public class HexBoardGenerator : MonoBehaviourPun
+public class HexBoardGenerator : PhotonSingleton<HexBoardGenerator>
 {
     public int gridRadius = 3;
     public float hexRadius = 1f;
+    public int extraTiles = 2; // Number of extra tiles on each side for each row
     public GameObject hexPrefab;
 
     private float hexWidth;
     private float hexHeight;
 
     private Hashtable hexagons = new Hashtable();
+
+    [SerializeField]
+    private List<HexagonTile> spawnPoints;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -25,8 +32,13 @@ public class HexBoardGenerator : MonoBehaviourPun
         PhotonNetwork.OfflineMode = true;
         PhotonNetwork.CreateRoom(null);
 #endif
+        spawnPoints = new List<HexagonTile>();
 
-
+        SpriteRenderer selfSR = gameObject.GetComponent<SpriteRenderer>();
+        if (selfSR)
+        {
+            selfSR.enabled = false;
+        }
 
         SpriteRenderer sr = hexPrefab.GetComponent<SpriteRenderer>();
         hexWidth = sr.bounds.size.x;
@@ -37,7 +49,6 @@ public class HexBoardGenerator : MonoBehaviourPun
 
     private void GenerateHexGrid()
     {
-        int extraTiles = 2; // Number of extra tiles on each side for each row
 
         for (int r = -gridRadius; r <= gridRadius; r++)
         {
@@ -46,12 +57,17 @@ public class HexBoardGenerator : MonoBehaviourPun
                 int s = -q - r;
                 if (Mathf.Abs(s) <= gridRadius + extraTiles)
                 {
-                    Vector3 hexPosition = HexToPixel(q, r, s);
+                    Vector3 hexPosition = HexToPixel(q, r, s) + transform.position;
                     GameObject hex = PhotonNetwork.Instantiate(hexPrefab.name, hexPosition, Quaternion.identity);
                     hex.name = $"Hex_{q}_{r}_{s}";
                     hex.transform.SetParent(this.transform);
 
                     hexagons.Add((q, r, s), hex);
+
+                    if (r == 0 && Mathf.Abs(q) == gridRadius + extraTiles && s + q == 0)
+                    {
+                        spawnPoints.Add(hex.GetComponent<HexagonTile>());
+                    }
                 }
             }
         }
@@ -67,5 +83,21 @@ public class HexBoardGenerator : MonoBehaviourPun
     GameObject GetTileAt(int q, int r, int s)
     {
         return hexagons[(q, r, s)] as GameObject;
+    }
+
+    public HexagonTile GetSpawnPoint()
+    {
+        try
+        {
+            HexagonTile spawnPoint = spawnPoints[0];
+            spawnPoints.RemoveRange(0, 1);
+
+            return spawnPoint;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError("GetSpawnPoint error: " + e.Message);
+            return null;
+        }
     }
 }
