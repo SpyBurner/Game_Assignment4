@@ -23,7 +23,7 @@ public class RoomManager : PhotonSingleton<RoomManager>
 
     public void CreateRoom()
     {
-        if (PhotonNetwork.OfflineMode)
+        if (SceneGlobalSetting.Instance.isSinglePlayer)
         {
             Debug.Log("Creating offline room");
             PhotonNetwork.CreateRoom(null);
@@ -45,6 +45,7 @@ public class RoomManager : PhotonSingleton<RoomManager>
 
         PhotonNetwork.CreateRoom(roomName);
     }
+
 
     public void JoinRoom()
     {

@@ -6,15 +6,31 @@ using UnityEngine;
 public class Spawner : MonoBehaviour
 {
     public GameObject playerPrefab;
+    public GameObject TurnManagerPrefab;
+    public GameObject BoardPrefab;
+
+    private bool spawned = false;
     // Start is called before the first frame update
     void Start()
     {
-        GameObject player = PhotonNetwork.Instantiate(playerPrefab.name, Vector3.zero, Quaternion.identity);
+        Invoke("SpawnObjects", .3f);
     }
 
-    // Update is called once per frame
-    void Update()
+    void SpawnObjects()
     {
-        
+        if (spawned) return;
+        if (PhotonNetwork.NetworkClientState != Photon.Realtime.ClientState.Joined)
+        {
+            Invoke("SpawnObjects", .3f);
+            return;
+        }
+        if (PhotonNetwork.IsMasterClient)
+        {
+            PhotonNetwork.Instantiate(TurnManagerPrefab.name, Vector3.zero, Quaternion.identity);
+            PhotonNetwork.Instantiate(BoardPrefab.name, BoardPrefab.transform.position, Quaternion.identity);
+        }
+        PhotonNetwork.Instantiate(playerPrefab.name, Vector3.zero, Quaternion.identity);
+        spawned = true;
     }
+
 }

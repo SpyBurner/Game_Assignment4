@@ -7,6 +7,7 @@ using Photon.Realtime;
 public class LoginManager : PhotonSingleton<LoginManager>
 {
     public Text usernameText;
+    private GameObject photonStatus;
     // Start is called before the first frame update
     void Start()
     {
@@ -14,12 +15,12 @@ public class LoginManager : PhotonSingleton<LoginManager>
         {
             throw new System.Exception("Username text is not set");
         }
+        photonStatus = GameObject.Find("PhotonStatus");
     }
 
     // Update is called once per frame
     void Update()
     {
-        GameObject photonStatus = GameObject.Find("PhotonStatus");
         if (photonStatus != null)
         {
             photonStatus.GetComponent<Text>().text = PhotonNetwork.NetworkClientState.ToString();
@@ -43,19 +44,20 @@ public class LoginManager : PhotonSingleton<LoginManager>
         PhotonNetwork.NickName = username;
         
         PhotonNetwork.ConnectUsingSettings();
+        SceneGlobalSetting.Instance.SetSinglePlayer(false);
     }
 
 
     public void Logout()
     {
         PhotonNetwork.Disconnect();
+        SceneGlobalSetting.Instance.SetSinglePlayer(true);
     }
    
     public override void OnConnectedToMaster()
     {
         base.OnConnectedToMaster();
         Debug.Log("Connected to master");
-        SceneGlobalSetting.Instance.SetSinglePlayer(false);
         PhotonNetwork.JoinLobby();
     }
 
@@ -70,6 +72,6 @@ public class LoginManager : PhotonSingleton<LoginManager>
     {
         base.OnDisconnected(cause);
         Debug.Log("Disconnected from server: " + cause.ToString());
-        SceneGlobalSetting.Instance.SetSinglePlayer(true);  
+        SceneGlobalSetting.Instance.SetSinglePlayer(true);
     }
 }

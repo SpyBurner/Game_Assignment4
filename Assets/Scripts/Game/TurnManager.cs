@@ -1,9 +1,10 @@
+using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class TurnManager : PhotonSingleton<TurnManager>
+public class TurnManager : MonoBehaviourPunCallbacks, IPunObservable
 {
     public int turnID = 0;
     public List<GameObject> players;
@@ -13,7 +14,10 @@ public class TurnManager : PhotonSingleton<TurnManager>
     // Start is called before the first frame update
     void Start()
     {
-
+        if (!PhotonNetwork.IsMasterClient)
+        {
+            PhotonNetwork.Destroy(gameObject);
+        }
     }
 
     // Update is called once per frame
@@ -46,5 +50,17 @@ public class TurnManager : PhotonSingleton<TurnManager>
         GetCurrentPlayer().GetComponent<PlayerCore>().StartTurn();
 
         OnAdvanceTurn.Invoke();
+    }
+
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            stream.SendNext(turnID);
+        }
+        else
+        {
+            turnID = (int)stream.ReceiveNext();
+        }
     }
 }

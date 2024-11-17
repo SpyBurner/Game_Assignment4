@@ -16,6 +16,7 @@ public class UIUpdater : MonoBehaviour
     public Text greenText;
     public Text yellowText;
 
+    private TurnManager turnManager;
     void Start()
     {
         //Delayed start
@@ -24,6 +25,8 @@ public class UIUpdater : MonoBehaviour
 
     void ButtonInit()
     {
+        turnManager = FindAnyObjectByType<TurnManager>();
+
         playerCore = player.GetComponent<PlayerCore>();
         playerStat = player.GetComponent<PlayerStat>();
 
@@ -45,8 +48,8 @@ public class UIUpdater : MonoBehaviour
         OnShieldChange();
         OnManaChange();
 
-        transform.Find("EndTurnButton").GetComponent<Button>().onClick.AddListener(() => TurnManager.Instance.AdvanceTurn());
-        if (TurnManager.Instance.turnID != playerCore.turnID)
+        transform.Find("EndTurnButton").GetComponent<Button>().onClick.AddListener(() => turnManager.AdvanceTurn());
+        if (turnManager.turnID != playerCore.turnID)
         {
             OnTurnEnd();
         }

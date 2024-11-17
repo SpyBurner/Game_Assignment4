@@ -9,13 +9,12 @@ public class SceneGlobalSetting : PersistentPhotonSingleton<SceneGlobalSetting>
 
     private void Start()
     {
-        PhotonNetwork.AutomaticallySyncScene = true;
     }
 
     public void SetSinglePlayer(bool isSinglePlayer)
     {
         this.isSinglePlayer = isSinglePlayer;
+        PhotonNetwork.AutomaticallySyncScene = !isSinglePlayer;
         PhotonNetwork.OfflineMode = isSinglePlayer;
     }
-
 }

@@ -19,14 +19,15 @@ public class PlayerCore : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        playerStat = GetComponent<PlayerStat>();
-        board = HexBoardGenerator.Instance;
-        turnManager = TurnManager.Instance;
         Invoke("InitPlayer", 0.5f);
     }
 
     void InitPlayer()
     {
+        playerStat = GetComponent<PlayerStat>();
+        board = FindAnyObjectByType<HexBoardGenerator>();
+        turnManager = FindAnyObjectByType<TurnManager>();
+
         GameObject newUI = Instantiate(UIPrefab);
         newUI.GetComponent<UIUpdater>().player = gameObject;
 

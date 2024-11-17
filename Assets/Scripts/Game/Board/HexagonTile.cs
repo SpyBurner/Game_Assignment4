@@ -14,10 +14,12 @@ public class HexagonTile : MonoBehaviour
 
     private Queue<int> tileDamage = new Queue<int>();
 
+    private TurnManager turnManager;
     // Start is called before the first frame update
     void Start()
     {
-        TurnManager.Instance.OnAdvanceTurn.AddListener(OnTurnStart);
+        turnManager = FindAnyObjectByType<TurnManager>();
+        turnManager.OnAdvanceTurn.AddListener(OnTurnStart);
     }
 
     // Update is called once per frame
@@ -38,7 +40,7 @@ public class HexagonTile : MonoBehaviour
                 PlayerStat playerStat = tile.onThisTile.GetComponent<PlayerStat>();
 
                 if (playerCore != null && playerStat != null &&
-                    playerCore.turnID == TurnManager.Instance.turnID &&
+                    playerCore.turnID == turnManager.turnID &&
                     playerStat.movePoint > 0)
                 {
                     return true;

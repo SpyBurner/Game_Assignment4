@@ -8,16 +8,19 @@ public class InputControl : MonoBehaviour
     public PlayerStat playerStat = null;
 
     public LayerMask whatIsTile;
+
+    private TurnManager turnManager = null;
     void Start()
     {
         playerCore = GetComponent<PlayerCore>();
         playerStat = GetComponent<PlayerStat>();
+        turnManager = FindAnyObjectByType<TurnManager>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (TurnManager.Instance.turnID != playerCore.turnID)
+        if (turnManager.turnID != playerCore.turnID)
             return;
 
         if (Input.GetKeyDown(KeyCode.Mouse0)) {

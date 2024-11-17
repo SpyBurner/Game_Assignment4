@@ -1,5 +1,3 @@
-#define DEBUG
-
 using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
@@ -10,7 +8,7 @@ using System.Linq;
 using Unity.VisualScripting;
 
 // Generate a hexagonal grid in i j k coordinates
-public class HexBoardGenerator : PhotonSingleton<HexBoardGenerator>
+public class HexBoardGenerator : MonoBehaviour
 {
     [Header("Grid")]
     public int gridRadius = 3;
@@ -35,10 +33,11 @@ public class HexBoardGenerator : PhotonSingleton<HexBoardGenerator>
     // Start is called before the first frame update
     void Start()
     {
-#if DEBUG
-        PhotonNetwork.OfflineMode = true;
-        PhotonNetwork.CreateRoom(null);
-#endif
+        if (!PhotonNetwork.IsMasterClient)
+        {
+            return;
+        }
+
         spawnPoints = new List<HexagonTile>();
 
         SpriteRenderer selfSR = gameObject.GetComponent<SpriteRenderer>();
@@ -65,7 +64,7 @@ public class HexBoardGenerator : PhotonSingleton<HexBoardGenerator>
                 if (Mathf.Abs(s) <= gridRadius + extraTiles)
                 {
                     Vector3 hexPosition = HexToPixel(q, r, s) + transform.position;
-                    GameObject hex = PhotonNetwork.Instantiate(hexPrefab.name, hexPosition, Quaternion.identity);
+                    GameObject hex = Instantiate(hexPrefab, hexPosition, Quaternion.identity);
                     hex.name = $"Hex_{q}_{r}_{s}";
                     hex.transform.SetParent(this.transform);
 

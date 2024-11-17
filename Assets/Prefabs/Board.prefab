@@ -49,6 +49,8 @@ MonoBehaviour:
   hexRadius: 0.74
   extraTiles: 1
   hexPrefab: {fileID: 1681087136543944931, guid: 7cfc55b0c0173864faecc5f7c250a76f, type: 3}
+  obstacleChance: 0.15
+  obstaclePrefab: {fileID: 3448894480547976947, guid: 5d84ddc16da888540b96efb4cd8d1cfa, type: 3}
   spawnPoints:
   - {fileID: 0}
   - {fileID: 0}
