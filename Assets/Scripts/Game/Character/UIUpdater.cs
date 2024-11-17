@@ -11,6 +11,7 @@ public class UIUpdater : MonoBehaviour
     private PlayerStat playerStat;
 
     public Text healthText;
+    public Text shieldText;
     public Text redText;
     public Text greenText;
     public Text yellowText;
@@ -34,11 +35,14 @@ public class UIUpdater : MonoBehaviour
         playerStat.OnDamage.AddListener(OnHealthChange);
         playerStat.OnHeal.AddListener(OnHealthChange);
 
+        //Shield
+        playerStat.OnShieldChange.AddListener(OnShieldChange);
+
         //Mana
         playerStat.OnManaChange.AddListener(OnManaChange);
 
         OnHealthChange();
-
+        OnShieldChange();
         OnManaChange();
 
         transform.Find("EndTurnButton").GetComponent<Button>().onClick.AddListener(() => TurnManager.Instance.AdvanceTurn());
@@ -80,6 +84,11 @@ public class UIUpdater : MonoBehaviour
     {
         healthText.text = playerStat.currentHP + "/" + playerStat.maxHP;
     }
+
+    void OnShieldChange()
+    {
+        shieldText.text = playerStat.shield.ToString();
+    } 
 
     void OnManaChange()
     {

@@ -59,7 +59,7 @@ public class PlayerCore : MonoBehaviour
     public void StartTurn()
     {
         PlayerStat playerStat = GetComponent<PlayerStat>();
-        playerStat.ResetMana();
+        playerStat.StartTurnReset();
         OnTurnStart.Invoke();
     }
 
@@ -92,7 +92,7 @@ public class PlayerCore : MonoBehaviour
 
             if (otherPlayerStat != null)
             {
-                if (currentTile.IsNeighbour(otherTile))
+                if (currentTile.IsNeighbour(otherTile) && !currentTile.IsSameTile(otherTile))
                 {
                     if (playerStat.UseMana(0))
                         otherPlayerStat.TakeDamage(1);

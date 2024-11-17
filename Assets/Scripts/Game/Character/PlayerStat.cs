@@ -16,6 +16,9 @@ public class PlayerStat : MonoBehaviour
 
     [SerializeField]
     public int currentHP { get; private set; }
+    [SerializeField]
+    public int shield { get; private set; }
+
 
     [SerializeField]
     public int attackPoint { get; private set; }
@@ -29,6 +32,9 @@ public class PlayerStat : MonoBehaviour
     [Space]
     public UnityEvent OnDamage;
     public UnityEvent OnHeal;
+
+    public UnityEvent OnShieldChange;
+
     public UnityEvent OnDeath;
 
     public UnityEvent OnManaChange;
@@ -45,6 +51,7 @@ public class PlayerStat : MonoBehaviour
         {
             maxHP = stat.maxHP;
             currentHP = maxHP;
+            shield = 0;
             attackPoint = stat.startingAttack;
             movePoint = stat.startingMove;
             shieldPoint = stat.startingShield;
@@ -68,8 +75,20 @@ public class PlayerStat : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
+        if (damage - shield > 0)
+        {
+            damage -= shield;
+            shield = 0;
+        }
+        else
+        {
+            shield -= damage;
+            damage = 0;
+        }
         currentHP -= damage;
+        
         OnDamage.Invoke();
+        OnShieldChange.Invoke();
 
         if (currentHP <= 0)
         {
@@ -110,11 +129,13 @@ public class PlayerStat : MonoBehaviour
                 if (shieldPoint >= amount)
                 {
                     shieldPoint -= amount;
+                    shield += amount;
                     result = true;
                 }
                 break;
         }
         OnManaChange.Invoke();
+        OnShieldChange.Invoke();
         return result;
     }
 
@@ -135,7 +156,7 @@ public class PlayerStat : MonoBehaviour
         OnManaChange.Invoke();
     }
 
-    public void ResetMana()
+    public void StartTurnReset()
     {
         int need = stat.maxTotalPoint - attackPoint - movePoint - shieldPoint;
 
@@ -150,6 +171,9 @@ public class PlayerStat : MonoBehaviour
         {
             AddMana(m);
         }
+
+        shield = 0;
+        OnShieldChange.Invoke();
     }
 }
 
