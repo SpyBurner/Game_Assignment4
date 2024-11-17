@@ -3,14 +3,19 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 
-public class SceneGlobalSetting : MonoBehaviour
+public class SceneGlobalSetting : PersistentPhotonSingleton<SceneGlobalSetting>
 {
     public bool isSinglePlayer;
 
-    // Start is called before the first frame update
-    void Awake()
+    private void Start()
     {
-        PhotonNetwork.OfflineMode = isSinglePlayer;    
+        PhotonNetwork.AutomaticallySyncScene = true;
+    }
+
+    public void SetSinglePlayer(bool isSinglePlayer)
+    {
+        this.isSinglePlayer = isSinglePlayer;
+        PhotonNetwork.OfflineMode = isSinglePlayer;
     }
 
 }

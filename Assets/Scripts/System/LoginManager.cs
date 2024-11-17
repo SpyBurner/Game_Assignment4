@@ -19,7 +19,15 @@ public class LoginManager : PhotonSingleton<LoginManager>
     // Update is called once per frame
     void Update()
     {
-        
+        GameObject photonStatus = GameObject.Find("PhotonStatus");
+        if (photonStatus != null)
+        {
+            photonStatus.GetComponent<Text>().text = PhotonNetwork.NetworkClientState.ToString();
+        }
+
+        if (usernameText != null) { 
+            usernameText.text = PhotonNetwork.NickName;
+        }
     }
 
     public void Login()
@@ -33,8 +41,10 @@ public class LoginManager : PhotonSingleton<LoginManager>
         }
 
         PhotonNetwork.NickName = username;
+        
         PhotonNetwork.ConnectUsingSettings();
     }
+
 
     public void Logout()
     {
@@ -45,11 +55,21 @@ public class LoginManager : PhotonSingleton<LoginManager>
     {
         base.OnConnectedToMaster();
         Debug.Log("Connected to master");
+        SceneGlobalSetting.Instance.SetSinglePlayer(false);
+        PhotonNetwork.JoinLobby();
+    }
+
+    public override void OnJoinedLobby()
+    {
+        base.OnJoinedLobby();
+        Debug.Log("Joined lobby");
+        SceneGlobalSetting.Instance.SetSinglePlayer(false);
     }
 
     public override void OnDisconnected(DisconnectCause cause)
     {
         base.OnDisconnected(cause);
         Debug.Log("Disconnected from server: " + cause.ToString());
+        SceneGlobalSetting.Instance.SetSinglePlayer(true);  
     }
 }

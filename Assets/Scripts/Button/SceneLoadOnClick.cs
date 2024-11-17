@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Photon.Pun;
 
 public class SceneLoadOnClick : MonoBehaviour
 {
@@ -11,7 +12,7 @@ public class SceneLoadOnClick : MonoBehaviour
     {
         GetComponent<Button>().onClick.AddListener(() =>
         {
-            UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
+            PhotonNetwork.LoadLevel(sceneName);
         });
     }
 }

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: testplayerstat
   m_EditorClassIdentifier: 
   maxHP: 50
-  maxTotalPoint: 5
-  startingAttack: 2
-  startingMove: 2
-  startingShield: 1
+  maxTotalPoint: 15000
+  startingAttack: 5000
+  startingMove: 5000
+  startingShield: 5000
