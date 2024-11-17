@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
-public class HexagonTile : MonoBehaviour
+public class HexagonTile : MonoBehaviourPunCallbacks, IPunObservable
 {
     public int i;
     public int j;
@@ -15,19 +16,47 @@ public class HexagonTile : MonoBehaviour
     private Queue<int> tileDamage = new Queue<int>();
 
     private TurnManager turnManager;
+
+    private bool isDirty = false;
+    private Color currentColor = Color.white;
+
     // Start is called before the first frame update
     void Start()
     {
-        turnManager = FindAnyObjectByType<TurnManager>();
-        turnManager.OnAdvanceTurn.AddListener(OnTurnStart);
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (!turnManager)
+        {
+            turnManager = FindAnyObjectByType<TurnManager>();
+            turnManager.OnAdvanceTurn.AddListener(OnTurnStart);
+            if (!turnManager)
+            {
+                return;
+            }
+        }
+
+        if (!hexBoard)
+        {
+            hexBoard = FindAnyObjectByType<HexBoardGenerator>();
+            if (!hexBoard)
+            {
+                return;
+            }
+        }
+
         bool nearCurrentPlayer = IsNearCurrentPlayer();
         UpdateTileColor(nearCurrentPlayer);
+    }
 
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (collision.collider.CompareTag("Obstacle"))
+        {
+            SetOnTile(collision.gameObject);
+        }
     }
 
     private bool IsNearCurrentPlayer()
@@ -69,11 +98,18 @@ public class HexagonTile : MonoBehaviour
         {
             spriteRenderer.color = Color.white;
         }
+
+        if (currentColor != spriteRenderer.color)
+        {
+            isDirty = true;
+            currentColor = spriteRenderer.color;
+        }
     }
 
     public void SetOnTile(GameObject _gameObject)
     {
         onThisTile = _gameObject;
+        isDirty = true;
     }
 
     public bool IsNeighbour(HexagonTile other)
@@ -134,6 +170,7 @@ public class HexagonTile : MonoBehaviour
                     playerStat.TakeDamage(damage);
                 }
             }
+            isDirty = true;
         }
     }
 
@@ -142,4 +179,27 @@ public class HexagonTile : MonoBehaviour
         this.GetComponent<SpriteRenderer>().color = Color.white;
     }
 
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            if (!isDirty)
+            {
+                return;
+            }
+            object[] objects = new object[2];
+            objects[0] = currentColor;
+            objects[1] = tileDamage;
+
+            stream.SendNext(objects);
+            isDirty = false;
+        }
+        else if (stream.IsReading)
+        {
+            object[] objects = (object[])stream.ReceiveNext();
+
+            currentColor = (Color)objects[0];
+            tileDamage = (Queue<int>)objects[1];
+        }
+    }
 }

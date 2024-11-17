@@ -4,12 +4,11 @@ using System.Collections.Generic;
 using System.Net.Http.Headers;
 using UnityEngine;
 using UnityEngine.Events;
+using Photon.Realtime;
 
-public class PlayerStat : MonoBehaviour
+public class PlayerStat : MonoBehaviourPunCallbacks, IPunObservable
 {
     public PlayerStatSO stat;
-
-
 
     [SerializeField]
     public int maxHP { get; private set; }
@@ -39,6 +38,8 @@ public class PlayerStat : MonoBehaviour
 
     public UnityEvent OnManaChange;
 
+    private bool isDirty = true;
+
     private void OnValidate()
     {
         //Nah
@@ -65,6 +66,11 @@ public class PlayerStat : MonoBehaviour
         OnHeal = new UnityEvent();
         OnDeath = new UnityEvent();
         OnManaChange = new UnityEvent();
+
+        OnDamage.AddListener(() => { isDirty = true; });
+        OnHeal.AddListener(() => { isDirty = true; });
+        OnShieldChange.AddListener(() => { isDirty = true; });
+        OnDeath.AddListener(() => { isDirty = true; });
     }
 
     // Update is called once per frame
@@ -174,6 +180,33 @@ public class PlayerStat : MonoBehaviour
 
         shield = 0;
         OnShieldChange.Invoke();
+    }
+
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            //if (!isDirty)
+            //{
+            //    return;
+            //}
+            //isDirty = false;
+            stream.SendNext(maxHP);
+            stream.SendNext(currentHP);
+            stream.SendNext(shield);
+            stream.SendNext(attackPoint);
+            stream.SendNext(movePoint);
+            stream.SendNext(shieldPoint);
+        }
+        else
+        {
+            maxHP = (int)stream.ReceiveNext();
+            currentHP = (int)stream.ReceiveNext();
+            shield = (int)stream.ReceiveNext();
+            attackPoint = (int)stream.ReceiveNext();
+            movePoint = (int)stream.ReceiveNext();
+            shieldPoint = (int)stream.ReceiveNext();
+        }
     }
 }
 

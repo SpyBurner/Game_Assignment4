@@ -24,11 +24,13 @@ public class Spawner : MonoBehaviour
             Invoke("SpawnObjects", .3f);
             return;
         }
+
         if (PhotonNetwork.IsMasterClient)
         {
             PhotonNetwork.Instantiate(TurnManagerPrefab.name, Vector3.zero, Quaternion.identity);
             PhotonNetwork.Instantiate(BoardPrefab.name, BoardPrefab.transform.position, Quaternion.identity);
         }
+        
         PhotonNetwork.Instantiate(playerPrefab.name, Vector3.zero, Quaternion.identity);
         spawned = true;
     }

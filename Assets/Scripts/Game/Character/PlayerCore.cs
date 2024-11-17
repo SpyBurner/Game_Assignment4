@@ -1,3 +1,5 @@
+using Photon.Pun;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -24,22 +26,46 @@ public class PlayerCore : MonoBehaviour
 
     void InitPlayer()
     {
-        playerStat = GetComponent<PlayerStat>();
-        board = FindAnyObjectByType<HexBoardGenerator>();
-        turnManager = FindAnyObjectByType<TurnManager>();
+            playerStat = GetComponent<PlayerStat>();
+            board = FindAnyObjectByType<HexBoardGenerator>();
+            turnManager = FindAnyObjectByType<TurnManager>();
+        
+        if (GetComponent<PhotonView>().IsMine)
+        {
+            GameObject newUI = Instantiate(UIPrefab);
+            newUI.GetComponent<UIUpdater>().player = gameObject;
 
-        GameObject newUI = Instantiate(UIPrefab);
-        newUI.GetComponent<UIUpdater>().player = gameObject;
+            currentTile = board.GetSpawnPoint();
+            currentTile.SetOnTile(gameObject);
 
-        currentTile = board.GetSpawnPoint();
-        currentTile.SetOnTile(gameObject);
-
-        turnID = turnManager.AddPlayer(gameObject);
+            turnID = turnManager.AddPlayer(gameObject);
+            Debug.Log("Added player to turn manager" + gameObject.name);
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (!turnManager)
+        {
+            turnManager = FindAnyObjectByType<TurnManager>();
+            if (!turnManager)
+            {
+                return;
+            }
+        }
+
+        if (!board)
+        {
+            board = FindAnyObjectByType<HexBoardGenerator>();
+            if (!board)
+            {
+                return;
+            }
+        }
+
+        if (!GetComponent<PhotonView>().IsMine)
+            return;
         //Set first tile
         if (currentTile == null || turnID == -1)
         {

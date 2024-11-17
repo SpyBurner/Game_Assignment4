@@ -8,7 +8,8 @@ using System.Linq;
 using Unity.VisualScripting;
 
 // Generate a hexagonal grid in i j k coordinates
-public class HexBoardGenerator : MonoBehaviour
+// Only store spawn points in client
+public class HexBoardGenerator : MonoBehaviourPun, IPunObservable
 {
     [Header("Grid")]
     public int gridRadius = 3;
@@ -30,14 +31,11 @@ public class HexBoardGenerator : MonoBehaviour
     [SerializeField]
     private List<HexagonTile> spawnPoints;
 
+    private bool isDirty = true;
+
     // Start is called before the first frame update
     void Start()
     {
-        if (!PhotonNetwork.IsMasterClient)
-        {
-            return;
-        }
-
         spawnPoints = new List<HexagonTile>();
 
         SpriteRenderer selfSR = gameObject.GetComponent<SpriteRenderer>();
@@ -55,6 +53,10 @@ public class HexBoardGenerator : MonoBehaviour
     }
     private void GenerateHexGrid()
     {
+        if (!PhotonNetwork.IsMasterClient || !hexPrefab)
+        {
+            return;
+        }
 
         for (int r = -gridRadius; r <= gridRadius; r++)
         {
@@ -64,7 +66,7 @@ public class HexBoardGenerator : MonoBehaviour
                 if (Mathf.Abs(s) <= gridRadius + extraTiles)
                 {
                     Vector3 hexPosition = HexToPixel(q, r, s) + transform.position;
-                    GameObject hex = Instantiate(hexPrefab, hexPosition, Quaternion.identity);
+                    GameObject hex = PhotonNetwork.Instantiate(hexPrefab.name, hexPosition, Quaternion.identity);
                     hex.name = $"Hex_{q}_{r}_{s}";
                     hex.transform.SetParent(this.transform);
 
@@ -87,6 +89,11 @@ public class HexBoardGenerator : MonoBehaviour
 
     private void GenerateObstacle()
     {
+        if (!PhotonNetwork.IsMasterClient || !obstaclePrefab)
+        {
+            return;
+        }
+
         foreach (GameObject hex in hexagons.Values)
         {
             if (spawnPoints.Contains(hex.GetComponent<HexagonTile>()))
@@ -122,13 +129,47 @@ public class HexBoardGenerator : MonoBehaviour
         {
             HexagonTile spawnPoint = spawnPoints[0];
             spawnPoints.RemoveRange(0, 1);
-
+            isDirty = true;
             return spawnPoint;
         }
         catch (System.Exception e)
         {
             Debug.LogError("GetSpawnPoint error: " + e.Message);
             return null;
+        }
+    }
+
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            //if (!isDirty)
+            //{
+            //    return;
+            //}
+            isDirty = false;
+            stream.SendNext(hexagons);
+            stream.SendNext(spawnPoints.Count);
+            foreach (HexagonTile spawnPoint in spawnPoints)
+            {
+                stream.SendNext(spawnPoint.i);
+                stream.SendNext(spawnPoint.j);
+                stream.SendNext(spawnPoint.k);
+            }
+        }
+        else if (stream.IsReading)
+        {
+            hexagons.Clear();
+            hexagons = (Hashtable)stream.ReceiveNext();
+            int count = (int)stream.ReceiveNext();
+            spawnPoints.Clear();
+            for (int i = 0; i < count; i++)
+            {
+                int q = (int)stream.ReceiveNext();
+                int r = (int)stream.ReceiveNext();
+                int s = (int)stream.ReceiveNext();
+                spawnPoints.Add(GetTileAt(q, r, s).GetComponent<HexagonTile>());
+            }
         }
     }
 }

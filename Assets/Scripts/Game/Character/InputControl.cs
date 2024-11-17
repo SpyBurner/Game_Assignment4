@@ -14,12 +14,19 @@ public class InputControl : MonoBehaviour
     {
         playerCore = GetComponent<PlayerCore>();
         playerStat = GetComponent<PlayerStat>();
-        turnManager = FindAnyObjectByType<TurnManager>();
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (turnManager == null)
+        {
+            turnManager = FindAnyObjectByType<TurnManager>();
+            if (turnManager == null)
+            {
+                return;
+            }
+        }
         if (turnManager.turnID != playerCore.turnID)
             return;
 

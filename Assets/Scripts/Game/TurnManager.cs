@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using Photon.Pun;
 
 public class TurnManager : MonoBehaviourPunCallbacks, IPunObservable
 {
@@ -14,10 +15,6 @@ public class TurnManager : MonoBehaviourPunCallbacks, IPunObservable
     // Start is called before the first frame update
     void Start()
     {
-        if (!PhotonNetwork.IsMasterClient)
-        {
-            PhotonNetwork.Destroy(gameObject);
-        }
     }
 
     // Update is called once per frame
@@ -57,10 +54,22 @@ public class TurnManager : MonoBehaviourPunCallbacks, IPunObservable
         if (stream.IsWriting)
         {
             stream.SendNext(turnID);
+            stream.SendNext(players.Count);
+            for (int i = 0; i < players.Count; i++)
+            {
+                stream.SendNext(players[i].GetComponent<PhotonView>().ViewID);
+            }
         }
         else
         {
             turnID = (int)stream.ReceiveNext();
+            int count = (int)stream.ReceiveNext();
+            players.Clear();
+            for (int i = 0; i < count; i++)
+            {
+                int viewID = (int)stream.ReceiveNext();
+                players.Add(PhotonView.Find(viewID).gameObject);
+            }
         }
     }
 }

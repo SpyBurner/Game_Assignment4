@@ -27,6 +27,12 @@ public class UIUpdater : MonoBehaviour
     {
         turnManager = FindAnyObjectByType<TurnManager>();
 
+        if (!turnManager)
+        {
+            Invoke("ButtonInit", 0.5f);
+            return;
+        }
+
         playerCore = player.GetComponent<PlayerCore>();
         playerStat = player.GetComponent<PlayerStat>();
 
