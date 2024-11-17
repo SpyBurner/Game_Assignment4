@@ -5,11 +5,12 @@ TagManager:
   serializedVersion: 2
   tags:
   - Board
+  - Player_UI
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Hexagon
   - Water
   - UI
   - 

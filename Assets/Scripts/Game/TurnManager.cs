@@ -44,5 +44,7 @@ public class TurnManager : PhotonSingleton<TurnManager>
         }
 
         GetCurrentPlayer().GetComponent<PlayerCore>().StartTurn();
+
+        OnAdvanceTurn.Invoke();
     }
 }

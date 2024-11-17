@@ -46,7 +46,6 @@ public class HexBoardGenerator : PhotonSingleton<HexBoardGenerator>
 
         GenerateHexGrid();
     }
-
     private void GenerateHexGrid()
     {
 
@@ -68,12 +67,18 @@ public class HexBoardGenerator : PhotonSingleton<HexBoardGenerator>
                     {
                         spawnPoints.Add(hex.GetComponent<HexagonTile>());
                     }
+
+                    hex.GetComponent<HexagonTile>().i = q;
+                    hex.GetComponent<HexagonTile>().j = r;
+                    hex.GetComponent<HexagonTile>().k = s;
+
+                    hex.GetComponent<HexagonTile>().hexBoard = this;
                 }
             }
         }
     }
 
-    private Vector3 HexToPixel(int q, int r, int s)
+    public Vector3 HexToPixel(int q, int r, int s)
     {
         float x = hexRadius * (Mathf.Sqrt(3) * q + Mathf.Sqrt(3) / 2 * r);
         float y = hexRadius * (3f / 2 * r);

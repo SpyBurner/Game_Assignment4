@@ -10,10 +10,10 @@ public class UIUpdater : MonoBehaviour
     private PlayerCore playerCore;
     private PlayerStat playerStat;
 
-    private Text healthText;
-    private Text redText;
-    private Text greenText;
-    private Text yellowText;
+    public Text healthText;
+    public Text redText;
+    public Text greenText;
+    public Text yellowText;
 
     void Start()
     {
@@ -38,7 +38,18 @@ public class UIUpdater : MonoBehaviour
         playerStat.OnManaChange.AddListener(OnManaChange);
 
         OnHealthChange();
-        transform.Find("EndTurnButton").GetComponent<Button>().onClick.AddListener(() => playerCore.EndTurn());
+
+        OnManaChange();
+
+        transform.Find("EndTurnButton").GetComponent<Button>().onClick.AddListener(() => TurnManager.Instance.AdvanceTurn());
+        if (TurnManager.Instance.turnID != playerCore.turnID)
+        {
+            OnTurnEnd();
+        }
+
+        transform.Find("AttackButton").GetComponent<Button>().onClick.AddListener(() => playerStat.UseMana(0));
+        transform.Find("MoveButton").GetComponent<Button>().onClick.AddListener(() => playerStat.UseMana(1));
+        transform.Find("ShieldButton").GetComponent<Button>().onClick.AddListener(() => playerStat.UseMana(2));
     }
 
     void OnTurnStart()

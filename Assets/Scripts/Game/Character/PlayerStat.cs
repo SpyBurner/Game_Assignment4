@@ -1,6 +1,7 @@
 using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.Http.Headers;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -86,25 +87,69 @@ public class PlayerStat : MonoBehaviour
         OnHeal.Invoke();
     }
 
-    public void UseMana(int type)
+    public bool UseMana(int type, int amount = 1)
+    {
+        bool result = false;
+        switch (type)
+        {
+            case 0:
+                if (attackPoint >= amount)
+                {
+                    attackPoint -= amount;
+                    result = true;
+                }
+                break;
+            case 1:
+                if (movePoint >= amount)
+                {
+                    movePoint -= amount;
+                    result = true;
+                }
+                break;
+            case 2:
+                if (shieldPoint >= amount)
+                {
+                    shieldPoint -= amount;
+                    result = true;
+                }
+                break;
+        }
+        OnManaChange.Invoke();
+        return result;
+    }
+
+    private void AddMana(int type)
     {
         switch (type)
         {
             case 0:
-                if (attackPoint > 0)
-                    attackPoint--;
+                attackPoint++;
                 break;
             case 1:
-                if (movePoint > 0)
-                    movePoint--;
+                movePoint++;
                 break;
             case 2:
-                if (shieldPoint > 0)
-                    shieldPoint--;
+                shieldPoint++;
                 break;
         }
         OnManaChange.Invoke();
     }
 
+    public void ResetMana()
+    {
+        int need = stat.maxTotalPoint - attackPoint - movePoint - shieldPoint;
+
+        List<int> mana = new List<int>();
+
+        for (int i = 0; i < need; i++)
+        {
+            mana.Add(Random.Range(0, 3));
+        }
+
+        foreach (int m in mana)
+        {
+            AddMana(m);
+        }
+    }
 }
 
